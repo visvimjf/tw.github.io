@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>創業庫存計算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #e1e5e8; /* 淺灰藍色背景 */
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #b0bec5; /* 柔和的藍灰色邊框 */
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #607d8b; /* 莫蘭迪藍色 */
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #78909c; /* 淡灰藍色 */
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #90a4ae; /* 柔和的藍灰色邊框 */
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        .input-group button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #607d8b; /* 莫蘭迪藍色 */
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .input-group button:hover {
+            background-color: #455a64; /* 更深的藍灰色 */
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #607d8b; /* 莫蘭迪藍色 */
+            text-align: center;
+        }
+        .result p {
+            margin: 5px 0;
+        }
+        hr {
+            border: 0;
+            border-top: 2px solid #b0bec5; /* 柔和的藍灰色水平線 */
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #78909c; /* 淡灰藍色 */
+        }
+        .footer span {
+            color: #607d8b; /* 莫蘭迪藍色 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>創業庫存計算器</h1>
+        <hr> <!-- 水平線 -->
+        <div class="input-group">
+            <label for="product">產品名稱（非必填）</label>
+            <input type="text" id="product" placeholder="輸入產品名稱">
+        </div>
+        
+        <div class="input-group">
+            <label for="inventory">庫存</label>
+            <input type="number" id="inventory" placeholder="輸入庫存">
+        </div>
+        <div class="input-group">
+            <label for="production">產量/5分鐘</label>
+            <input type="number" id="production" placeholder="輸入產量">
+        </div>
+        <div class="input-group">
+            <label for="consumption">消耗/5分鐘</label>
+            <input type="number" id="consumption" placeholder="輸入消耗">
+        </div>
+        <div class="input-group">
+            <button onclick="calculate()">計算</button>
+        </div>
+        <hr> <!-- 水平線 -->
+        <div class="result" id="result"></div>
+        <div class="result" id="estimatedTime"></div>
+    </div>
+
+    <div class="footer">
+        <span>Designed by JoeFang</span>
+    </div>
+
+    <script>
+        function calculate() {
+            // 取得輸入值
+            const productName = document.getElementById('product').value.trim();
+            const inventory = parseFloat(document.getElementById('inventory').value);
+            const production = parseFloat(document.getElementById('production').value);
+            const consumption = parseFloat(document.getElementById('consumption').value);
+
+            // 檢查輸入值是否有效
+            if (isNaN(inventory) || isNaN(production) || isNaN(consumption)) {
+                document.getElementById('result').innerText = '請填寫所有數值';
+                document.getElementById('estimatedTime').innerText = '';
+                return;
+            }
+
+            // 確保產量小於消耗
+            if (production >= consumption) {
+                document.getElementById('result').innerText = '產量必須小於消耗';
+                document.getElementById('estimatedTime').innerText = '';
+                return;
+            }
+
+            // 計算公式
+            const totalHours = inventory / ((consumption - production) * 12);
+
+            // 將結果轉換為小時和分鐘，並進行四捨五入
+            const hoursInt = Math.floor(totalHours);
+            const minutes = Math.round((totalHours - hoursInt) * 60);
+
+            // 如果分鐘數等於或超過60，將其轉換為小時
+            const extraHours = Math.floor(minutes / 60);
+            const finalHours = hoursInt + extraHours;
+            const finalMinutes = minutes % 60;
+
+            // 獲取當前時間
+            const now = new Date();
+
+            // 計算預計完成時間
+            const endTime = new Date(now.getTime() + (finalHours * 60 + finalMinutes) * 60000);
+            const estimatedTime = endTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            const estimatedDate = endTime.toLocaleDateString(); // 獲取日期
+
+            // 顯示結果
+            let resultText = productName 
+                ? `${productName}約還剩 ${finalHours} 小時 ${finalMinutes} 分鐘`
+                : `庫存約還剩 ${finalHours} 小時 ${finalMinutes} 分鐘`;
+
+            let estimatedTimeText = `預計耗盡時間: ${estimatedDate} ${estimatedTime}`;
+
+            document.getElementById('result').innerText = resultText;
+            document.getElementById('estimatedTime').innerText = estimatedTimeText;
+        }
+    </script>
+</body>
+</html>
