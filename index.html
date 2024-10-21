@@ -42,6 +42,9 @@
             box-sizing: border-box;
             font-size: 1em;
         }
+        .input-group input[type="number"] {
+            min: 0; /* 限制最小值為0 */
+        }
         .input-group button {
             padding: 10px 15px;
             border: none;
@@ -92,15 +95,15 @@
         
         <div class="input-group">
             <label for="inventory">庫存</label>
-            <input type="number" id="inventory" placeholder="輸入庫存">
+            <input type="number" id="inventory" placeholder="輸入庫存" min="0">
         </div>
         <div class="input-group">
             <label for="production">產量/5分鐘</label>
-            <input type="number" id="production" placeholder="輸入產量">
+            <input type="number" id="production" placeholder="輸入產量" min="0">
         </div>
         <div class="input-group">
             <label for="consumption">消耗/5分鐘</label>
-            <input type="number" id="consumption" placeholder="輸入消耗">
+            <input type="number" id="consumption" placeholder="輸入消耗" min="0">
         </div>
         <div class="input-group">
             <button onclick="calculate()">計算</button>
@@ -122,9 +125,15 @@
             const production = parseFloat(document.getElementById('production').value);
             const consumption = parseFloat(document.getElementById('consumption').value);
 
-            // 檢查輸入值是否有效
+            // 檢查輸入值是否有效且非負數
             if (isNaN(inventory) || isNaN(production) || isNaN(consumption)) {
                 document.getElementById('result').innerText = '請填寫所有數值';
+                document.getElementById('estimatedTime').innerText = '';
+                return;
+            }
+
+            if (inventory < 0 || production < 0 || consumption < 0) {
+                document.getElementById('result').innerText = '數值不能為負數';
                 document.getElementById('estimatedTime').innerText = '';
                 return;
             }
