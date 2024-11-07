@@ -1,0 +1,75 @@
+document.addEventListener('DOMContentLoaded', loadLayout);
+
+const dates = document.querySelectorAll('.date');
+const boxContainer = document.getElementById('box-container');
+const trash = document.getElementById('trash');
+let draggedBox = null;
+
+dates.forEach(date => {
+    // 添加觸摸事件
+    date.addEventListener('touchstart', touchStart);
+    date.addEventListener('touchend', touchEnd);
+});
+
+boxContainer.addEventListener('touchstart', touchStart);
+boxContainer.addEventListener('touchend', touchEnd);
+trash.addEventListener('touchstart', touchStart);
+trash.addEventListener('touchend', deleteBox);
+
+function touchStart(e) {
+    // 確保移動的是觸摸事件
+    e.preventDefault();
+    const target = e.target;
+
+    // 如果點擊的是方塊，則設定拖拽目標
+    if (target.classList.contains('box')) {
+        draggedBox = target;
+        const touch = e.touches[0];
+        draggedBox.style.position = 'absolute';
+        draggedBox.style.zIndex = 1000;
+        document.body.appendChild(draggedBox);
+
+        moveAt(touch);
+        
+        document.addEventListener('touchmove', touchMove);
+    }
+}
+
+function touchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    moveAt(touch);
+}
+
+function moveAt(touch) {
+    draggedBox.style.left = touch.pageX - draggedBox.offsetWidth / 2 + 'px';
+    draggedBox.style.top = touch.pageY - draggedBox.offsetHeight / 2 + 'px';
+}
+
+function touchEnd(e) {
+    e.preventDefault();
+    if (!draggedBox) return;
+
+    const touch = e.changedTouches[0];
+    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    if (dropTarget && dropTarget.classList.contains('date')) {
+        dropTarget.appendChild(draggedBox);  // 放置方塊到日期容器
+    } else if (dropTarget && dropTarget === boxContainer) {
+        dropTarget.appendChild(draggedBox);  // 放置方塊到右側容器
+    }
+    
+    // 重置拖拽狀態
+    draggedBox.style.position = 'static';
+    draggedBox.style.zIndex = '';
+    draggedBox = null;
+    document.removeEventListener('touchmove', touchMove);
+}
+
+function deleteBox(e) {
+    e.preventDefault();
+    if (draggedBox) {
+        draggedBox.remove();
+        draggedBox = null;
+    }
+}
